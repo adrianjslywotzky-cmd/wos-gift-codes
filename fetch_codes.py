@@ -122,19 +122,24 @@ for r in all_results:
 trimmed = [r[:150] for r in unique[:25]]
 search_text = json.dumps(trimmed, ensure_ascii=False)
 
+# 特殊文字を除去してAPIエラーを防ぐ
+clean_results = []
+for r in trimmed:
+    cleaned = r.replace('"', "'").replace('\\', '').replace('\n', ' ').replace('\r', '')
+    clean_results.append(cleaned)
+search_text = json.dumps(clean_results, ensure_ascii=False)
+
 prompt = (
-    "今日は" + TODAY + "（日本時間）です。"
-    "以下はWhiteout Survivalのギフトコードに関する最新情報です"
-    "（英語・日本語・中国語・韓国語の複数ソースから収集）:\n\n"
+    "Today is " + TODAY + " JST. "
+    "Below are the latest search results about Whiteout Survival gift codes: "
     + search_text +
-    "\n\n上記を精査して" + TODAY + "時点でアクティブなコードのみ抽出してください。"
-    "期限切れは絶対に含めないでください。"
-    "グローバルコードと地域限定コードが混在する場合は"
-    "noteフィールドに「地域限定」と記載してください。"
-    "JSON形式のみで返答（説明不要）: "
-    "{\"codes\":[{\"code\":\"コード\",\"rewards\":\"報酬（日本語）\","
-    "\"deadline\":\"JST ISO8601またはnull\",\"note\":\"補足またはnull\"}]}"
+    " Based on the above, list only the currently ACTIVE gift codes as of " + TODAY + ". "
+    "Exclude any expired codes. "
+    "Reply with JSON only: "
+    "{\"codes\":[{\"code\":\"CODE\",\"rewards\":\"rewards in Japanese\","
+    "\"deadline\":\"JST ISO8601 or null\",\"note\":\"note or null\"}]}"
 )
+
 
 payload = json.dumps({
     "model": "claude-haiku-4-5-20251001",
