@@ -53,6 +53,9 @@ for url in [
     "https://lootbar.gg/blog/en/whiteout-survival-newest-codes.html",
     "https://www.supercheats.com/whiteout-survival-codes",
     "https://techplayforge.com/whiteout-survival-gift-code/",
+    "https://www.dexerto.com/codes/whiteout-survival-codes-3295120/",
+    "https://digitalrevenuestudio.co",
+    "https://www.whiteoutsurvival.wiki/giftcodes/",
 ]:
     html = fetch_url(url)
     if html:
