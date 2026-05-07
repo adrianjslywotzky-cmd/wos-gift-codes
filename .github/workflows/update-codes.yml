@@ -1,4 +1,5 @@
 name: Update Gift Codes
+# Auto schedule enabled
 
 on:
   schedule:
