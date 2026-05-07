@@ -55,7 +55,7 @@
     .reddit-list { display: flex; flex-direction: column; gap: 10px; }
     .reddit-card { background: var(--surface); border: 1px solid rgba(251,146,60,.2); border-radius: 8px; padding: 14px 16px; animation: up .4s ease both; transition: border-color .2s; }
     .reddit-card:hover { border-color: rgba(251,146,60,.4); }
-    .reddit-title { font-size: .85rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .reddit-title { font-size: .85rem; font-weight: 600; color: var(--text); margin-bottom: 8px; }
     .reddit-meta { display: flex; align-items: center; gap: 10px; }
     .reddit-link { font-size: .72rem; color: var(--amber); text-decoration: none; }
     .reddit-link:hover { text-decoration: underline; }
@@ -99,7 +99,6 @@
   </div>
 
   <script>
-    // Snow
     const snow = document.getElementById('snow');
     for (let i = 0; i < 22; i++) {
       const f = document.createElement('div');
@@ -109,15 +108,14 @@
       snow.appendChild(f);
     }
 
-    function timeAgo(dateStr) {
-      const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    function timeAgo(utc) {
+      const diff = Math.floor((Date.now() / 1000) - utc);
       if (diff < 60) return `${diff}秒前`;
       if (diff < 3600) return `${Math.floor(diff/60)}分前`;
       if (diff < 86400) return `${Math.floor(diff/3600)}時間前`;
       return `${Math.floor(diff/86400)}日前`;
     }
 
-    // 確認済みコード読み込み
     async function loadCodes() {
       try {
         const res = await fetch('codes.json?t=' + Date.now());
@@ -144,23 +142,17 @@
       }
     }
 
-    // Reddit速報をブラウザから直接取得（CORSプロキシ経由）
     async function loadReddit() {
       const el = document.getElementById('reddit-list');
       const KEYWORDS = ['gift code', 'giftcode', 'new code', 'code dropped', 'code just'];
-
-      // CORSプロキシ経由でReddit JSONを取得
       const targets = [
         'https://www.reddit.com/r/whiteoutsurvival/search.json?q=gift+code+dropped&sort=new&restrict_sr=1&limit=10',
         'https://www.reddit.com/r/whiteoutsurvival/search.json?q=new+gift+code&sort=new&restrict_sr=1&limit=10',
       ];
-
       const allPosts = [];
       const seenIds = new Set();
-
       for (const url of targets) {
         try {
-          // allorigins.win はCORSプロキシとして動作する無料サービス
           const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
           const res = await fetch(proxy, { signal: AbortSignal.timeout(10000) });
           const wrapper = await res.json();
@@ -184,19 +176,17 @@
           console.warn('Reddit fetch error:', e);
         }
       }
-
       if (allPosts.length === 0) {
         el.innerHTML = '<p class="empty">現在、新着のReddit投稿はありません</p>';
         return;
       }
-
       allPosts.sort((a, b) => b.created - a.created);
       el.innerHTML = allPosts.slice(0, 8).map((p, i) => `
         <div class="reddit-card" style="animation-delay:${i*0.05}s">
           <div class="reddit-title">${p.title}</div>
           <div class="reddit-meta">
             <a class="reddit-link" href="${p.url}" target="_blank" rel="noopener noreferrer">Redditで見る →</a>
-            <span class="reddit-time">${timeAgo(p.created * 1000)}</span>
+            <span class="reddit-time">${timeAgo(p.created)}</span>
           </div>
         </div>`).join('');
     }
