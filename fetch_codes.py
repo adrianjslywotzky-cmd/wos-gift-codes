@@ -118,7 +118,9 @@ for r in all_results:
         seen.add(key)
         unique.append(r[:300])
 
-search_text = json.dumps(unique[:40], ensure_ascii=False)
+# プロンプトが長くなりすぎないよう各結果を短く切り詰め
+trimmed = [r[:150] for r in unique[:25]]
+search_text = json.dumps(trimmed, ensure_ascii=False)
 
 prompt = (
     "今日は" + TODAY + "（日本時間）です。"
