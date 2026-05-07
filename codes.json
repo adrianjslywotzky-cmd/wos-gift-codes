@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-07 15:37 JST",
+  "updated": "2026-05-07 15:46 JST",
   "codes": [
     {
       "code": "OFFICIALSTORE",
@@ -8,100 +8,10 @@
       "note": "10ソース確認済み: buffbuff, dexerto, eldorado, gamesradar, gamsgo, lootbar, pockettactics, wiki, wosapp, wosrewards"
     },
     {
-      "code": "RamadanJoy2026",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "8ソース確認済み: buffbuff, dexerto, eldorado, gamesradar, gamsgo, lootbar, pockettactics, wosapp"
-    },
-    {
-      "code": "GW2026JP",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "6ソース確認済み: dexerto, eldorado, gamesradar, lootbar, wiki, wosapp"
-    },
-    {
       "code": "ChildrensDay505",
       "rewards": "ジェム×1000、トレーニング加速(1h)×8、肉×50K、木材×50K、石炭×10K、鉄×5K、VIP XP×200、汎用加速(5m)×10",
       "deadline": null,
       "note": "4ソース確認済み: dexerto, gamesradar, wosapp, wosrewards"
-    },
-    {
-      "code": "Herstory26",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "6ソース確認済み: eldorado, gamesradar, gamsgo, lootbar, pockettactics, wosapp"
-    },
-    {
-      "code": "EidMubarak2026",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "7ソース確認済み: buffbuff, eldorado, gamesradar, gamsgo, lootbar, pockettactics, wosapp"
-    },
-    {
-      "code": "Earth26",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "5ソース確認済み: gamesradar, gamsgo, lootbar, pockettactics, wosapp"
-    },
-    {
-      "code": "WOS3YS",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "4ソース確認済み: gamesradar, gamsgo, lootbar, wosapp"
-    },
-    {
-      "code": "VpqG7dDK7",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "5ソース確認済み: buffbuff, gamesradar, gamsgo, pockettactics, wosapp"
-    },
-    {
-      "code": "HowieLovesWOS",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "5ソース確認済み: eldorado, gamesradar, lootbar, pockettactics, wosapp"
-    },
-    {
-      "code": "WOS0408",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "5ソース確認済み: buffbuff, gamesradar, gamsgo, lootbar, wosapp"
-    },
-    {
-      "code": "HappyMayDay",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "6ソース確認済み: dexerto, eldorado, gamesradar, lootbar, wiki, wosapp"
-    },
-    {
-      "code": "YearoftheHorse",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "5ソース確認済み: eldorado, gamsgo, lootbar, pockettactics, wosapp"
-    },
-    {
-      "code": "A7D9K2Q",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "5ソース確認済み: eldorado, gamsgo, lootbar, pockettactics, wosapp"
-    },
-    {
-      "code": "INS200K",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "4ソース確認済み: eldorado, gamsgo, lootbar, wosapp"
-    },
-    {
-      "code": "OUNF42TI553",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "4ソース確認済み: eldorado, gamsgo, lootbar, wosapp"
-    },
-    {
-      "code": "WOS1220",
-      "rewards": "報酬情報を確認してください",
-      "deadline": null,
-      "note": "4ソース確認済み: eldorado, gamsgo, lootbar, wosapp"
     }
   ]
 }
