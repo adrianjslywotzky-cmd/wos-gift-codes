@@ -43,24 +43,45 @@ def fetch_rss(url):
 
 all_results = []
 
+# 英語攻略サイト直接フェッチ
 for url in [
     "https://www.gamesradar.com/games/survival/whiteout-survival-codes-gift/",
     "https://www.pockettactics.com/whiteout-survival/codes",
     "https://www.mrguider.org/codes/whiteout-survival-codes-gift/",
+    "https://buffbuff.com/blog/whiteout-survival-gift-codes",
+    "https://www.gamsgo.com/blog/whiteout-survival-gift-codes",
+    "https://lootbar.gg/blog/en/whiteout-survival-newest-codes.html",
+    "https://www.supercheats.com/whiteout-survival-codes",
+    "https://techplayforge.com/whiteout-survival-gift-code/",
 ]:
     html = fetch_url(url)
     if html:
         all_results.extend(extract_codes(html))
 
+# Google検索RSS（英語・日本語）
 for q in [
-    "Whiteout Survival gift code active 2026",
+    "Whiteout Survival gift code active " + TODAY,
     "Whiteout Survival gift code new today",
-    "whiteout survival gift code reddit 2026",
-    "Whiteout Survival gift code " + TODAY,
+    "whiteout survival gift code reddit " + TODAY,
+    "whiteout survival gift code discord 2026",
+    "WOS gift code " + TODAY,
+    "Whiteout Survival ギフトコード 有効 2026",
+    "ホワイトアウトサバイバル ギフトコード " + TODAY,
+    "whiteout survival 礼包码 2026",
+    "whiteout survival 화이트아웃 서바이벌 코드 2026",
 ]:
     url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(q) + "&hl=en&gl=US&ceid=US:en"
     all_results.extend(fetch_rss(url))
 
+# 日本語Google検索RSS
+for q in [
+    "ホワイトアウトサバイバル ギフトコード",
+    "WOS ギフトコード 最新",
+]:
+    url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(q) + "&hl=ja&gl=JP&ceid=JP:ja"
+    all_results.extend(fetch_rss(url))
+
+# 重複除去
 seen = set()
 unique = []
 for r in all_results:
@@ -69,14 +90,17 @@ for r in all_results:
         seen.add(key)
         unique.append(r[:300])
 
-search_text = json.dumps(unique[:30], ensure_ascii=False)
+search_text = json.dumps(unique[:40], ensure_ascii=False)
 
 prompt = (
     "今日は" + TODAY + "（日本時間）です。"
-    "以下はWhiteout Survivalのギフトコードに関する最新情報です:\n\n"
+    "以下はWhiteout Survivalのギフトコードに関する最新情報です"
+    "（英語・日本語・中国語・韓国語の複数ソースから収集）:\n\n"
     + search_text +
     "\n\n上記を精査して" + TODAY + "時点でアクティブなコードのみ抽出してください。"
     "期限切れは絶対に含めないでください。"
+    "グローバルコードと地域限定コードが混在する場合は"
+    "noteフィールドに「地域限定」と記載してください。"
     "JSON形式のみで返答（説明不要）: "
     "{\"codes\":[{\"code\":\"コード\",\"rewards\":\"報酬（日本語）\","
     "\"deadline\":\"JST ISO8601またはnull\",\"note\":\"補足またはnull\"}]}"
