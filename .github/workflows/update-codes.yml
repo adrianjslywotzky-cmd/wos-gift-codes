@@ -15,11 +15,43 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Fetch latest codes via Claude API
+      - name: Search and update codes
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           TODAY=$(TZ=Asia/Tokyo date +%Y-%m-%d)
+
+          # Google検索RSSで最新情報を収集
+          SEARCH_RESULTS=$(python3 << 'PYEOF'
+          import urllib.request, urllib.parse, xml.etree.ElementTree as ET, json
+
+          queries = [
+              "Whiteout Survival gift code " + "2026",
+              "Whiteout Survival gift code reddit",
+              "site:reddit.com whiteout survival gift code",
+          ]
+
+          all_text = []
+          for q in queries:
+              try:
+                  url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(q) + "&hl=en&gl=US&ceid=US:en"
+                  req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+                  with urllib.request.urlopen(req, timeout=10) as r:
+                      tree = ET.parse(r)
+                      root = tree.getroot()
+                      for item in root.findall('.//item')[:5]:
+                          title = item.findtext('title') or ''
+                          desc = item.findtext('description') or ''
+                          all_text.append(title + ' ' + desc)
+              except Exception as e:
+                  print(f"Search error: {e}", flush=True)
+
+          print(json.dumps(all_text[:15]))
+          PYEOF
+          )
+
+          # Claude APIで情報を整理
+          PROMPT="今日は${TODAY}（日本時間）です。以下はWhiteout Survivalのギフトコードに関する最新の検索結果です:\n\n${SEARCH_RESULTS}\n\n上記の情報と、あなたが知っているWhiteout Survivalのギフトコード情報を組み合わせて、${TODAY}時点でアクティブなコードをすべて抽出してください。期限切れのコードは除外してください。以下のJSON形式のみで返答（説明不要）: {\"codes\":[{\"code\":\"コード\",\"rewards\":\"報酬（日本語）\",\"deadline\":\"JST ISO8601またはnull\",\"note\":\"補足またはnull\"}]}"
 
           RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
             -H "content-type: application/json" \
@@ -28,10 +60,7 @@ jobs:
             -d "{
               \"model\": \"claude-haiku-4-5-20251001\",
               \"max_tokens\": 1500,
-              \"messages\": [{
-                \"role\": \"user\",
-                \"content\": \"今日は${TODAY}（日本時間）です。Whiteout Survivalの現在アクティブなギフトコードをすべて教えてください。期限切れは除外。以下のJSON形式のみで返答（説明不要）: {\\\"codes\\\":[{\\\"code\\\":\\\"コード\\\",\\\"rewards\\\":\\\"報酬（日本語）\\\",\\\"deadline\\\":\\\"JST ISO8601またはnull\\\",\\\"note\\\":\\\"補足またはnull\\\"}]}\"
-              }]
+              \"messages\": [{\"role\": \"user\", \"content\": $(echo "$PROMPT" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')}]
             }")
 
           TEXT=$(echo "$RESPONSE" | python3 -c "
@@ -43,7 +72,7 @@ jobs:
           " 2>/dev/null || echo "")
 
           python3 << PYEOF
-          import json, re, os
+          import json, re
           from datetime import datetime, timezone, timedelta
 
           text = """$TEXT"""
@@ -61,7 +90,6 @@ jobs:
                       break
                   except:
                       pass
-
           if not parsed:
               try:
                   parsed = json.loads(text.strip())
