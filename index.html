@@ -61,7 +61,6 @@
     .reddit-link:hover { text-decoration: underline; }
     .reddit-time { font-size: .68rem; color: var(--muted); }
     .reddit-warn { font-size: .72rem; color: var(--muted); margin-bottom: 14px; line-height: 1.5; }
-    .reddit-status { font-size: .68rem; color: var(--muted); margin-bottom: 10px; }
     .empty { text-align: center; padding: 30px; color: var(--muted); font-size: .8rem; }
     @media(max-width:500px){ .title{font-size:1.5rem} .grid{grid-template-columns:1fr} }
   </style>
@@ -93,8 +92,7 @@
         <span class="badge badge-live">未確認・速報</span>
       </div>
       <p class="reddit-warn">r/whiteoutsurvival の新着ギフトコード投稿です。確認済みコードに反映されるまでの速報としてご利用ください。</p>
-      <p class="reddit-status" id="reddit-status">取得中...</p>
-      <div class="reddit-list" id="reddit-list"></div>
+      <div class="reddit-list" id="reddit-list"><p class="empty">読み込み中...</p></div>
     </main>
   </div>
 
@@ -114,23 +112,6 @@
       if (diff < 3600) return `${Math.floor(diff/60)}分前`;
       if (diff < 86400) return `${Math.floor(diff/3600)}時間前`;
       return `${Math.floor(diff/86400)}日前`;
-    }
-
-    function renderReddit(posts, status) {
-      document.getElementById('reddit-status').textContent = status || '';
-      const el = document.getElementById('reddit-list');
-      if (!posts || posts.length === 0) {
-        el.innerHTML = '<p class="empty">現在、新着のReddit投稿はありません</p>';
-        return;
-      }
-      el.innerHTML = posts.map((p, i) => `
-        <div class="reddit-card" style="animation-delay:${i*0.05}s">
-          <div class="reddit-title">${p.title}</div>
-          <div class="reddit-meta">
-            <a class="reddit-link" href="${p.url}" target="_blank" rel="noopener noreferrer">Redditで見る →</a>
-            <span class="reddit-time">${timeAgo(p.created)}</span>
-          </div>
-        </div>`).join('');
     }
 
     async function loadCodes() {
@@ -160,49 +141,71 @@
     }
 
     async function loadReddit() {
+      const el = document.getElementById('reddit-list');
       const KEYWORDS = ['gift code', 'giftcode', 'new code', 'code dropped', 'code just'];
-      const targets = [
-        'https://www.reddit.com/r/whiteoutsurvival/search.json?q=gift+code+dropped&sort=new&restrict_sr=1&limit=15',
-        'https://www.reddit.com/r/whiteoutsurvival/search.json?q=new+gift+code&sort=new&restrict_sr=1&limit=15',
-      ];
-
       const allPosts = [];
       const seenIds = new Set();
-      let success = false;
 
-      for (const url of targets) {
-        try {
-          const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-          const res = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
-          if (!res.ok) continue;
-          const wrapper = await res.json();
-          const data = JSON.parse(wrapper.contents);
-          const posts = data?.data?.children || [];
-          for (const post of posts) {
-            const d = post.data;
-            const title = (d.title || '').toLowerCase();
-            if (seenIds.has(d.id)) continue;
-            if (KEYWORDS.some(k => title.includes(k))) {
-              seenIds.add(d.id);
-              allPosts.push({
-                title: d.title,
-                url: 'https://www.reddit.com' + d.permalink,
-                created: d.created_utc,
-              });
-              success = true;
+      // 複数のプロキシを試みる
+      const proxies = [
+        (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+        (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+        (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+      ];
+
+      const redditUrls = [
+        'https://www.reddit.com/r/whiteoutsurvival/search.json?q=gift+code&sort=new&restrict_sr=1&limit=15',
+        'https://www.reddit.com/r/whiteoutsurvival/new.json?limit=25',
+      ];
+
+      for (const redditUrl of redditUrls) {
+        for (const makeProxy of proxies) {
+          try {
+            const proxyUrl = makeProxy(redditUrl);
+            const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+            if (!res.ok) continue;
+
+            const raw = await res.json();
+            // allorigins は {contents: "..."} 形式
+            const text = raw.contents || raw;
+            const data = typeof text === 'string' ? JSON.parse(text) : text;
+            const posts = data?.data?.children || [];
+
+            for (const post of posts) {
+              const d = post.data;
+              const title = (d.title || '').toLowerCase();
+              if (seenIds.has(d.id)) continue;
+              if (KEYWORDS.some(k => title.includes(k))) {
+                seenIds.add(d.id);
+                allPosts.push({
+                  title: d.title,
+                  url: 'https://www.reddit.com' + d.permalink,
+                  created: d.created_utc,
+                });
+              }
             }
+            if (allPosts.length > 0) break; // 成功したらプロキシループを抜ける
+          } catch(e) {
+            continue; // 次のプロキシを試す
           }
-        } catch(e) {
-          console.warn('Reddit fetch error:', e);
         }
+        if (allPosts.length > 0) break; // 成功したらURLループを抜ける
       }
 
-      if (success) {
-        allPosts.sort((a, b) => b.created - a.created);
-        renderReddit(allPosts.slice(0, 8), '');
-      } else {
-        renderReddit([], '');
+      if (allPosts.length === 0) {
+        el.innerHTML = '<p class="empty">現在、新着のReddit投稿はありません</p>';
+        return;
       }
+
+      allPosts.sort((a, b) => b.created - a.created);
+      el.innerHTML = allPosts.slice(0, 8).map((p, i) => `
+        <div class="reddit-card" style="animation-delay:${i*0.05}s">
+          <div class="reddit-title">${p.title}</div>
+          <div class="reddit-meta">
+            <a class="reddit-link" href="${p.url}" target="_blank" rel="noopener noreferrer">Redditで見る →</a>
+            <span class="reddit-time">${timeAgo(p.created)}</span>
+          </div>
+        </div>`).join('');
     }
 
     function copy(btn, code) {
