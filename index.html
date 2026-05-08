@@ -142,70 +142,31 @@
 
     async function loadReddit() {
       const el = document.getElementById('reddit-list');
-      const KEYWORDS = ['gift code', 'giftcode', 'new code', 'code dropped', 'code just'];
-      const allPosts = [];
-      const seenIds = new Set();
+      try {
+        const res = await fetch(
+          'https://wos-reddit-proxy.adrian-j-slywotzky.workers.dev',
+          { signal: AbortSignal.timeout(10000) }
+        );
+        if (!res.ok) throw new Error('fetch failed');
+        const data = await res.json();
+        const posts = data.posts || [];
 
-      // 複数のプロキシを試みる
-      const proxies = [
-        (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-        (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-        (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-      ];
-
-      const redditUrls = [
-        'https://www.reddit.com/r/whiteoutsurvival/search.json?q=gift+code&sort=new&restrict_sr=1&limit=15',
-        'https://www.reddit.com/r/whiteoutsurvival/new.json?limit=25',
-      ];
-
-      for (const redditUrl of redditUrls) {
-        for (const makeProxy of proxies) {
-          try {
-            const proxyUrl = makeProxy(redditUrl);
-            const res = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-            if (!res.ok) continue;
-
-            const raw = await res.json();
-            // allorigins は {contents: "..."} 形式
-            const text = raw.contents || raw;
-            const data = typeof text === 'string' ? JSON.parse(text) : text;
-            const posts = data?.data?.children || [];
-
-            for (const post of posts) {
-              const d = post.data;
-              const title = (d.title || '').toLowerCase();
-              if (seenIds.has(d.id)) continue;
-              if (KEYWORDS.some(k => title.includes(k))) {
-                seenIds.add(d.id);
-                allPosts.push({
-                  title: d.title,
-                  url: 'https://www.reddit.com' + d.permalink,
-                  created: d.created_utc,
-                });
-              }
-            }
-            if (allPosts.length > 0) break; // 成功したらプロキシループを抜ける
-          } catch(e) {
-            continue; // 次のプロキシを試す
-          }
+        if (posts.length === 0) {
+          el.innerHTML = '<p class="empty">現在、新着のReddit投稿はありません</p>';
+          return;
         }
-        if (allPosts.length > 0) break; // 成功したらURLループを抜ける
-      }
 
-      if (allPosts.length === 0) {
+        el.innerHTML = posts.map((p, i) => `
+          <div class="reddit-card" style="animation-delay:${i*0.05}s">
+            <div class="reddit-title">${p.title}</div>
+            <div class="reddit-meta">
+              <a class="reddit-link" href="${p.url}" target="_blank" rel="noopener noreferrer">Redditで見る →</a>
+              <span class="reddit-time">${timeAgo(p.created)}</span>
+            </div>
+          </div>`).join('');
+      } catch(e) {
         el.innerHTML = '<p class="empty">現在、新着のReddit投稿はありません</p>';
-        return;
       }
-
-      allPosts.sort((a, b) => b.created - a.created);
-      el.innerHTML = allPosts.slice(0, 8).map((p, i) => `
-        <div class="reddit-card" style="animation-delay:${i*0.05}s">
-          <div class="reddit-title">${p.title}</div>
-          <div class="reddit-meta">
-            <a class="reddit-link" href="${p.url}" target="_blank" rel="noopener noreferrer">Redditで見る →</a>
-            <span class="reddit-time">${timeAgo(p.created)}</span>
-          </div>
-        </div>`).join('');
     }
 
     function copy(btn, code) {
