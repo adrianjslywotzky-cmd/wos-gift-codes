@@ -26,11 +26,7 @@
     .title em { color: var(--gold); font-style: normal; }
     .meta { text-align: center; margin-bottom: 4px; font-size: .68rem; color: var(--muted); }
     .meta span { color: var(--ice); }
-    .counter { text-align: center; margin-bottom: 12px; font-size: .62rem; color: #2a3a4a; }
-    .counter span { color: #2a3a4a; }
-    .notify-btn { display: block; margin: 0 auto 16px; background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.25); color: var(--frost); font-family: 'Noto Sans JP', sans-serif; font-size: .76rem; padding: 7px 18px; border-radius: 5px; cursor: pointer; transition: all .2s; }
-    .notify-btn:hover { background: rgba(56,189,248,.16); }
-    .notify-btn.granted { background: rgba(74,222,128,.1); border-color: rgba(74,222,128,.3); color: var(--green); cursor: default; }
+    .counter { text-align: center; margin-bottom: 16px; font-size: .62rem; color: #2a3a4a; }
     .redeem { text-align: center; margin-bottom: 28px; }
     .redeem a { display: inline-flex; align-items: center; gap: 6px; background: rgba(251,191,36,.1); border: 1px solid rgba(251,191,36,.3); color: var(--gold); font-size: .76rem; padding: 7px 18px; border-radius: 5px; text-decoration: none; transition: all .2s; }
     .redeem a:hover { background: rgba(251,191,36,.18); }
@@ -60,6 +56,19 @@
     .note { font-size: .7rem; color: var(--muted); line-height: 1.5; }
     .new-mark { display: inline-block; background: var(--red); color: #fff; font-size: .55rem; font-weight: 700; letter-spacing: .1em; padding: 2px 6px; border-radius: 2px; margin-left: 6px; vertical-align: middle; animation: blink 2s infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.6} }
+    .notify-section { margin: 32px 0 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; }
+    .notify-section h3 { font-family: 'Cinzel', serif; font-size: .85rem; letter-spacing: .08em; color: var(--ice2); margin-bottom: 12px; }
+    .notify-btn { display: block; width: 100%; margin-bottom: 16px; background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.25); color: var(--frost); font-family: 'Noto Sans JP', sans-serif; font-size: .78rem; padding: 9px 18px; border-radius: 5px; cursor: pointer; transition: all .2s; text-align: center; }
+    .notify-btn:hover { background: rgba(56,189,248,.16); }
+    .notify-btn.granted { background: rgba(74,222,128,.1); border-color: rgba(74,222,128,.3); color: var(--green); cursor: default; }
+    .notify-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .notify-guide { font-size: .74rem; color: var(--muted); line-height: 1.8; }
+    .notify-guide strong { color: var(--ice); display: block; margin-bottom: 6px; }
+    .notify-guide ol { padding-left: 1.4em; margin-bottom: 12px; }
+    .notify-guide li { margin-bottom: 4px; }
+    .notify-guide .caution { margin-top: 10px; font-size: .68rem; color: #3a5060; line-height: 1.7; }
+    .notify-guide .caution li { list-style: none; padding-left: 0; }
+    .notify-guide .caution li::before { content: '※ '; }
     .reddit-list { display: flex; flex-direction: column; gap: 10px; }
     .reddit-card { background: var(--surface); border: 1px solid rgba(251,146,60,.2); border-radius: 8px; padding: 14px 16px; animation: up .4s ease both; transition: border-color .2s; }
     .reddit-card:hover { border-color: rgba(251,146,60,.4); }
@@ -82,7 +91,6 @@
     </header>
     <p class="meta">最終更新: <span id="updated">-</span></p>
     <p class="counter">👁 <span id="counter">-</span></p>
-    <button class="notify-btn" id="notify-btn" onclick="requestNotify()">🔔 新コード通知をオンにする</button>
     <div class="redeem">
       <a href="https://wos-giftcode.centurygame.com" target="_blank" rel="noopener noreferrer">🎁 コード交換所を開く</a>
     </div>
@@ -94,6 +102,28 @@
       </div>
       <p class="count" id="count"></p>
       <div class="grid" id="grid"><p class="empty">読み込み中...</p></div>
+
+      <div class="notify-section">
+        <h3>🔔 新コード通知</h3>
+        <button class="notify-btn" id="notify-btn" onclick="requestNotify()">新コード通知をオンにする</button>
+        <div class="notify-guide">
+          <strong>通知を受け取るための手順：</strong>
+          <ol>
+            <li>SafariでこのページのURLを開く</li>
+            <li>画面下部の「共有」ボタン（四角に上矢印のアイコン）をタップ</li>
+            <li>「ホーム画面に追加」を選んで追加する</li>
+            <li>ホーム画面に追加されたアイコンからサイトを開く</li>
+            <li>上のボタンをタップして通知を許可する</li>
+          </ol>
+          <ul class="caution">
+            <li>ホーム画面に追加したアイコンから開き、アプリを閉じずにバックグラウンドにしている間は通知されます</li>
+            <li>アプリを完全に閉じると通知されません</li>
+            <li>新コード追加から約2分以内にお知らせします</li>
+            <li>iPhoneおよびiPadのSafariのみ対応しています</li>
+            <li>ホーム画面からではなくSafariのタブから開いた場合は通知されません</li>
+          </ul>
+        </div>
+      </div>
 
       <div class="divider"></div>
 
@@ -109,7 +139,6 @@
   <script>
     const PROXY = 'https://wos-reddit-proxy.adrian-j-slywotzky.workers.dev';
 
-    // Snow
     const snow = document.getElementById('snow');
     for (let i = 0; i < 22; i++) {
       const f = document.createElement('div');
@@ -119,7 +148,6 @@
       snow.appendChild(f);
     }
 
-    // アクセスカウンター（Cloudflare KV）
     async function loadCounter() {
       try {
         const res = await fetch(`${PROXY}/count`);
@@ -144,11 +172,10 @@
       return (Date.now() - new Date(addedAt).getTime()) < 48 * 60 * 60 * 1000;
     }
 
-    // 通知
     const notifyBtn = document.getElementById('notify-btn');
     function updateNotifyBtn() {
       if (!('Notification' in window)) {
-        notifyBtn.textContent = '🔔 通知非対応ブラウザです';
+        notifyBtn.textContent = '通知非対応のブラウザです';
         notifyBtn.disabled = true;
         return;
       }
