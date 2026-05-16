@@ -2,14 +2,6 @@
   "updated": "2026-05-10 22:30 JST",
   "codes": [
     {
-      "code": "TESTCODE001",
-      "rewards": "テスト通知用コードです（削除予定）",
-      "deadline": null,
-      "note": "テスト用",
-      "verified": true,
-      "addedAt": "2026-05-10T22:30:00+09:00"
-    },
-    {
       "code": "LoveMom2026",
       "rewards": "報酬情報を確認してください",
       "deadline": null,
